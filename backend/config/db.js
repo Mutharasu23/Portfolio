@@ -1,22 +1,28 @@
-const sql = require("mssql/msnodesqlv8");
+const sql = require("mssql");
 
+// Database configuration
 const config = {
-  connectionString:
-    "Driver={ODBC Driver 18 for SQL Server};" +
-    "Server=MUTHU\\SQLEXPRESS;" +
-    "Database=EMPLOYEE;" +
-    "Trusted_Connection=Yes;" +
-    "Encrypt=No;" +
-    "TrustServerCertificate=Yes;"
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  server: process.env.DB_SERVER, // example: yourserver.database.windows.net
+  database: process.env.DB_NAME,
+  port: 1433,
+  options: {
+    encrypt: true, // Required for Azure / cloud SQL
+    trustServerCertificate: true
+  }
 };
 
-const poolPromise = sql.connect(config)
+// Create connection pool
+const poolPromise = new sql.ConnectionPool(config)
+  .connect()
   .then(pool => {
     console.log("✅ SQL Server Connected Successfully");
     return pool;
   })
   .catch(err => {
-    console.error("❌ SQL Error:", err);
+    console.error("❌ Database Connection Failed:", err);
+    process.exit(1);
   });
 
 module.exports = {
