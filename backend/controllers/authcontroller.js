@@ -1,88 +1,74 @@
-const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-/* ================= REGISTER ================= */
+const { sql, poolPromise } = require("../config/db");
 
+/* REGISTER */
 exports.register = async (req, res) => {
-
-  const { email, password } = req.body;
-
   try {
 
-    // Check existing user
-    const exist = await User.findOne({ email });
+    const { email, password } = req.body;
 
-    if (exist) {
-      return res.status(400).json({ msg: "Email already registered" });
+    const pool = await poolPromise;
+
+    const check = await pool.request()
+      .input("email", sql.VarChar, email)
+      .query("SELECT * FROM Users WHERE email=@email");
+
+    if (check.recordset.length > 0) {
+      return res.status(400).json({ msg: "User exists" });
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashPassword = await bcrypt.hash(password, salt);
+    const hash = await bcrypt.hash(password, 10);
 
-    // Create user
-    const user = new User({
-      email,
-      password: hashPassword
-    });
+    await pool.request()
+      .input("email", sql.VarChar, email)
+      .input("password", sql.VarChar, hash)
+      .query("INSERT INTO Users (email,password) VALUES (@email,@password)");
 
-    await user.save();
+    res.json({ msg: "Registered" });
 
-    res.status(201).json({
-      msg: "Registration successful"
-    });
-
-  } catch (error) {
-
-    console.error(error);
-    res.status(500).json({ msg: "Server error" });
-
+  } catch (err) {
+    console.log("REGISTER ERROR:", err);
+    res.status(500).json({ msg: "Server Error" });
   }
 };
 
 
-/* ================= LOGIN ================= */
-
+/* LOGIN */
 exports.login = async (req, res) => {
-
-  const { email, password } = req.body;
-
   try {
 
-    // Check user
-    const user = await User.findOne({ email });
+    const { email, password } = req.body;
 
-    if (!user) {
-      return res.status(400).json({ msg: "Invalid email or password" });
+    const pool = await poolPromise;
+
+    const result = await pool.request()
+      .input("email", sql.VarChar, email)
+      .query("SELECT * FROM Users WHERE email=@email");
+
+    if (result.recordset.length === 0) {
+      return res.status(400).json({ msg: "User not found" });
     }
 
-    // Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
+    const user = result.recordset[0];
 
-    if (!isMatch) {
-      return res.status(400).json({ msg: "Invalid email or password" });
+    const match = await bcrypt.compare(password, user.password);
+
+    if (!match) {
+      return res.status(400).json({ msg: "Wrong password" });
     }
 
-    // Create token
     const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
+      { id: user.id },
+      "mysecretkey",
       { expiresIn: "1d" }
     );
 
-    res.json({
-      token,
-      user: {
-        id: user._id,
-        email: user.email
-      }
-    });
+    res.json({ token });
 
-  } catch (error) {
-
-    console.error(error);
-    res.status(500).json({ msg: "Server error" });
-
+  } catch (err) {
+    console.log("LOGIN ERROR:", err);
+    res.status(500).json({ msg: "Server Error" });
   }
 };

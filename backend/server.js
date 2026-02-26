@@ -1,19 +1,15 @@
-// Load environment variables FIRST
-const dotenv = require("dotenv");
-dotenv.config();
+// Load env variables
+require("dotenv").config();
 
 // Import packages
 const express = require("express");
 const cors = require("cors");
 
-// Database connection
-const connectDB = require("./config/db");
-
 // Initialize app
 const app = express();
 
-// Connect to MongoDB
-connectDB();
+// Connect DB (just import, it auto-connects)
+require("./config/db");
 
 // Middleware
 app.use(cors());
@@ -31,6 +27,4 @@ app.get("/", (req, res) => {
 const PORT = process.env.PORT || 5000;
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+module.exports = app;

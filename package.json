@@ -1,5 +1,7 @@
 {
   "dependencies": {
-    "axios": "^1.13.4"
+    "axios": "^1.13.4",
+    "msnodesqlv8": "^5.1.4",
+    "mssql": "^12.2.0"
   }
 }

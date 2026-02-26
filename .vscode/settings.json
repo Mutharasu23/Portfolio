@@ -1,0 +1,19 @@
+{
+    "git.ignoreLimitWarning": true,
+    "sqltools.connections": [
+        {
+            "connectionMethod": "DSN",
+            "odbcOptions": {
+                "dbms": "Microsoft SQL Server",
+                "showTblRecords": "DBMS",
+                "inaccessibleDatabase": true,
+                "inaccessibleSchema": true
+            },
+            "previewLimit": 50,
+            "driver": "SQLTools ODBC Driver",
+            "name": "Muthu_Sql",
+            "dsnString": "MuthuSql",
+            "password": ""
+        }
+    ]
+}

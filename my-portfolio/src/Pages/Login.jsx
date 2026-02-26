@@ -10,7 +10,7 @@ function Login({ setIsAuth }) {
 
   const navigate = useNavigate();
 
-  const API = "http://localhost:5000/api/auth";
+  const API = `${process.env.REACT_APP_BACKEND_URI}/api/auth`;
 
   // Auto redirect
   useEffect(() => {

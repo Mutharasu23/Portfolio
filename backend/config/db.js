@@ -1,18 +1,25 @@
-const mongoose = require("mongoose");
+const sql = require("mssql/msnodesqlv8");
 
-const connectDB = async () => {
-  try {
-
-    await mongoose.connect(process.env.MONGO_URI);
-
-    console.log("MongoDB Connected");
-
-  } catch (error) {
-
-    console.error("MongoDB Error:", error.message);
-    process.exit(1);
-
-  }
+const config = {
+  connectionString:
+    "Driver={ODBC Driver 18 for SQL Server};" +
+    "Server=MUTHU\\SQLEXPRESS;" +
+    "Database=EMPLOYEE;" +
+    "Trusted_Connection=Yes;" +
+    "Encrypt=No;" +
+    "TrustServerCertificate=Yes;"
 };
 
-module.exports = connectDB;
+const poolPromise = sql.connect(config)
+  .then(pool => {
+    console.log("✅ SQL Server Connected Successfully");
+    return pool;
+  })
+  .catch(err => {
+    console.error("❌ SQL Error:", err);
+  });
+
+module.exports = {
+  sql,
+  poolPromise
+};
